@@ -8,6 +8,8 @@
 
 #import "IDMPhoto.h"
 #import "IDMPhotoBrowser.h"
+#import <SDWebImageManager.h>
+#import "SDWebImageOperation.h"
 
 // Private
 @interface IDMPhoto () {
@@ -125,6 +127,47 @@ caption = _caption;
 }
 
 - (void)loadUnderlyingImageAndNotify {
+  
+  NSAssert([[NSThread currentThread] isMainThread], @"This method must be called on the main thread.");
+  _loadingInProgress = YES;
+  if (self.underlyingImage) {
+    // Image already loaded
+    [self imageLoadingComplete];
+  }
+  else {
+    if (_photoPath) {
+      // Load async from file
+      [self performSelectorInBackground:@selector(loadImageFromFileAsync) withObject:nil];
+    } else if (_photoURL) {
+
+  SDWebImageManager *manager = [SDWebImageManager sharedManager];
+  
+  [manager downloadImageWithURL:_photoURL options:(SDWebImageProgressiveDownload | SDWebImageRetryFailed | SDWebImageHighPriority) progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+    //
+    
+    CGFloat progress = ((CGFloat)receivedSize)/((CGFloat)expectedSize);
+    if (self.progressUpdateBlock) {
+      self.progressUpdateBlock(progress);
+    }
+    
+  } completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *_imageURL) {
+    //
+    
+//    UIImage *image = responseObject;
+    self.underlyingImage = image;
+    [self performSelectorOnMainThread:@selector(imageLoadingComplete) withObject:nil waitUntilDone:NO];
+    
+    }
+    ];
+    } else {
+      // Failed - no source
+      self.underlyingImage = nil;
+      [self imageLoadingComplete];
+    }
+  }
+}
+
+  /*
     NSAssert([[NSThread currentThread] isMainThread], @"This method must be called on the main thread.");
     _loadingInProgress = YES;
     if (self.underlyingImage) {
@@ -163,7 +206,9 @@ caption = _caption;
             [self imageLoadingComplete];
         }
     }
-}
+   
+   */
+//}
 
 // Release if we can get it again from path or url
 - (void)unloadUnderlyingImage {
