@@ -34,7 +34,7 @@ NSLocalizedStringFromTableInBundle((key), nil, [NSBundle bundleWithPath:[[NSBund
     NSUInteger _currentPageIndex;
 	
     // Buttons
-    UIButton *_doneButton;
+    
     
 	// Toolbar
 	UIToolbar *_toolbar;
@@ -140,6 +140,7 @@ NSLocalizedStringFromTableInBundle((key), nil, [NSBundle bundleWithPath:[[NSBund
 @synthesize actionsSheet = _actionsSheet, activityViewController = _activityViewController;
 @synthesize trackTintColor = _trackTintColor, progressTintColor = _progressTintColor;
 @synthesize delegate = _delegate;
+@synthesize doneButton = _doneButton;
 
 #pragma mark - NSObject
 
